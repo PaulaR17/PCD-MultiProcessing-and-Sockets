@@ -24,7 +24,7 @@ def crear_archivo_corredor():
 
 def avanzar():
     distancia=0
-    while distancia <100:#cuando un proceso llegue a 100 será cuando gane
+    while distancia <100:#cuando un proceso llegue a 100 será cuando gane un corredor
         suma=random.randint(1,100)
         distancia+=suma
         print(f"Proceso {os.getpid()} avanzó {suma} metros. Total: {distancia} metros.")
