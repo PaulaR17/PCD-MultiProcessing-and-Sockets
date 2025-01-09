@@ -24,10 +24,32 @@ def crear_archivo_corredor():
 
 def avanzar():
     distancia=0
+    nombre_archivo = f"corredor_{os.getpid()}"
+
     while distancia <100:#cuando un proceso llegue a 100 será cuando gane un corredor
         suma=random.randint(1,100)
         distancia+=suma
         print(f"Proceso {os.getpid()} avanzó {suma} metros. Total: {distancia} metros.")
+        while os.path.exists("ESCRIBIENDO_"+nombre_archivo):
+            print("Se está escribiendo en el archivo, voy a esperar")
+            time.sleep(0.5)
+
+        archivo = open(nombre_archivo, "r")
+        contenido=archivo.read().strip()#para quitar los espacios y saltos
+        archivo.close()
+
+        if contenido=="LEIDO":
+            print("El archivo ha sido leido por el proceso padre así que podemos actualizarlo")
+            temp_archivo = open("ESCRIBIENDO_" + nombre_archivo, "w")#crear archivo temporal para bloquear escritura
+            temp_archivo.close()
+            archivo=open(nombre_archivo,"w")
+            archivo.write(str(distancia))
+            archivo.close()
+            os.remove("ESCRIBIENDO_" + nombre_archivo)
+            print("Ya he escrito mi avance en mi archivo")
+        else:
+            print("El proceso padre aún no leyó mi archivo, me espero.")
+            time.sleep(0.5)
 
 
 
