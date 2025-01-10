@@ -3,12 +3,8 @@ import random
 import time
 import os
 
-#EJERCICIO 1: Carrera de proceso
-#notas:
-"""
-un PROCESO es almenos un programa cargado en memoria, con todos los recursos que
-necesita para funcionar alojados en una zona de memoria propia, asignada SOLO para el
-"""
+# Mutex para sincronización
+mutex = mp.Lock()
 
 def funcion_procesos():
     print(f"Estás en el proceso hijo {os.getpid()}")
@@ -16,60 +12,90 @@ def funcion_procesos():
     avanzar()
 
 def crear_archivo_corredor():
-    print(f"Creando el archivo para el proceso {os.getpid()}")
-    nombre_archivo=f"corredor_{os.getpid()}"
-    archivo=open(nombre_archivo,"w") #w para escribir
-    archivo.write("He iniciado el archivo")
+    nombre_archivo = f"corredor_{os.getpid()}"
+    mutex.acquire()  # Bloqueo
+    archivo = open(nombre_archivo, "w")
+    archivo.write("LEIDO")  # Inicializamos con "LEIDO"
     archivo.close()
+    mutex.release()  # Liberación del mutex
 
 def avanzar():
-    distancia=0
+    distancia = 0
     nombre_archivo = f"corredor_{os.getpid()}"
 
-    while distancia <100:#cuando un proceso llegue a 100 será cuando gane un corredor
-        suma=random.randint(1,100)
-        distancia+=suma
-        print(f"Proceso {os.getpid()} avanzó {suma} metros. Total: {distancia} metros.")
-        while os.path.exists("ESCRIBIENDO_"+nombre_archivo):
-            print("Se está escribiendo en el archivo, voy a esperar")
-            time.sleep(0.5)
+    while distancia < 100:
+        if os.path.exists("terminado"):
+            return
 
+        suma = random.randint(1, 10)
+        distancia += suma
+        print(f"Proceso {os.getpid()} avanzó {suma} metros. Total: {distancia} metros.")
+
+        while os.path.exists("ESCRIBIENDO_" + nombre_archivo):
+            time.sleep(0.1)
+        mutex.acquire()
         archivo = open(nombre_archivo, "r")
-        contenido=archivo.read().strip()#para quitar los espacios y saltos
+        contenido = archivo.read().strip()
         archivo.close()
 
-        if contenido=="LEIDO":
-            print("El archivo ha sido leido por el proceso padre así que podemos actualizarlo")
-            temp_archivo = open("ESCRIBIENDO_" + nombre_archivo, "w")#crear archivo temporal para bloquear escritura
+        if contenido == "LEIDO":
+            temp_archivo = open("ESCRIBIENDO_" + nombre_archivo, "w")
             temp_archivo.close()
-            archivo=open(nombre_archivo,"w")
+
+            archivo = open(nombre_archivo, "w")
             archivo.write(str(distancia))
             archivo.close()
+
             os.remove("ESCRIBIENDO_" + nombre_archivo)
-            print("Ya he escrito mi avance en mi archivo")
         else:
-            print("El proceso padre aún no leyó mi archivo, me espero.")
-            time.sleep(0.5)
+            time.sleep(0.1)
+        mutex.release()
 
+def padre():
+    ganador = False
+    ganador_pid = -1
 
+    while not ganador:
+        for proceso in procesos:
+            pid = proceso.pid
+            nombre_archivo = f"corredor_{pid}"
+
+            if os.path.exists(nombre_archivo):
+                while os.path.exists("ESCRIBIENDO_" + nombre_archivo):
+                    time.sleep(0.1)
+
+                mutex.acquire()
+                archivo = open(nombre_archivo, "r")
+                distancia = archivo.read().strip()
+                archivo.close()
+
+                if distancia != "LEIDO" and int(distancia) >= 100:
+                    ganador = True
+                    ganador_pid = pid
+                    archivo_terminado = open("terminado", "w")
+                    archivo_terminado.close()
+                elif distancia == "LEIDO":
+                    archivo = open(nombre_archivo, "w")
+                    archivo.write("LEIDO")
+                    archivo.close()
+                mutex.release()
+
+    print(f"LA CARRERA HA TERMINADO! Ha ganado el proceso {ganador_pid}")
 
 if __name__ == "__main__":
-    #cuando empecemos siempre estaremos en el proceso padre
     print("Estamos en el proceso padre")
     print(f"PID del proceso padre: {os.getpid()}")
 
-    corredores=int(input("¿Cuantos corredores quieres?"))
+    corredores = int(input("¿Cuántos corredores quieres? "))
     procesos = []
 
-    for _ in range(corredores):
+    for i in range(corredores):
         process = mp.Process(target=funcion_procesos)
         process.start()
         print(f"ID del proceso hijo: {process.pid}")
-        procesos.append(process)  #guardar el proceso en la lista
+        procesos.append(process)
 
-        # Esperar a que todos los procesos terminen
+    padre()
+
     for process in procesos:
         process.join()
-
-
-
