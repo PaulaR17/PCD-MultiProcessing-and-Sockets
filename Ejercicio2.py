@@ -1,6 +1,6 @@
 import random
 
-generos = ["acción", "aventura", "rol", "deportes", "estrategia", "simulación"]
+generos = ["acción", "aventura", "rol", "deportes", "estrategia", "simulación","romance","carreras"]
 tamaño_lista = random.randint(5, 15)
 videojuegos = []
 
