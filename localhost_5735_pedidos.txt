@@ -1,0 +1,2 @@
+Petición enviada: rol
+Respuesta recibida: Error: romance no coincide con rol.
