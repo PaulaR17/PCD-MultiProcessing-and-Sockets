@@ -52,8 +52,9 @@ def avanzar():
 
     if distancia >= 100 and not os.path.exists("ganador"):
         mutex.acquire()
-        with open("ganador", "w") as archivo_ganador:
-            archivo_ganador.write(str(os.getpid())) #escribimos en el ganador el pid del proceso ganador para poder anunciarlo en el  padre
+        archivo_ganador = open("ganador", "w")
+        archivo_ganador.write(str(os.getpid()))  # escribimos el PID del proceso ganador
+        archivo_ganador.close()  # cerramos el archivo
         mutex.release()
         print(f"Proceso {os.getpid()} ha ganado la carrera!!!!!")
 
@@ -61,8 +62,10 @@ def padre():
     while not os.path.exists("ganador"):
         time.sleep(0.1)
     mutex.acquire()
-    with open("ganador", "r") as archivo_ganador: #leemos al ganador
-        ganador_pid = archivo_ganador.read().strip()
+    mutex.acquire()
+    archivo_ganador = open("ganador", "r")
+    ganador_pid = archivo_ganador.read().strip()  # leemos el contenido
+    archivo_ganador.close()  # cerramos el archivo
     mutex.release()
 
     print(f"LA CARRERA HA TERMINADO! Ha ganado el proceso {ganador_pid}")
