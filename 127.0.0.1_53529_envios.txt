@@ -1,1 +1,0 @@
-Error: romance no coincide con rol.

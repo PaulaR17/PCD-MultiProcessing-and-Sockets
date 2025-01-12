@@ -98,3 +98,7 @@ for hilo in clientes:
 
 # El servidor sigue corriendo indefinidamente
 print("Todos los clientes han terminado. El servidor sigue ejecutándose.")
+"""
+RESPUESTA A --> El servidor no terminará nunca su ejecución, porque estará esperando conexiones, pero cuando todos los clientes hayan terminado, lo consumido en cada archivo del servidor y cada archivo del cliente, debería coincidir. ¿Coincide siempre?
+No tiene por que coincidir siempre, no hay una garantía de que esto pase. Esto es asi porque tenemos muchos factores que no podemos controlar como las condiciones de carrera, cuando volvemos a poner un elemnto en la cola, conexión...
+"""

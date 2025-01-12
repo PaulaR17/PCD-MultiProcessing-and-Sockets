@@ -1,2 +1,0 @@
-Petición enviada: deportes
-Respuesta recibida: Error: carreras no coincide con deportes.

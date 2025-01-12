@@ -1,2 +1,0 @@
-Petición enviada: rol
-Respuesta recibida: Error: carreras no coincide con rol.
